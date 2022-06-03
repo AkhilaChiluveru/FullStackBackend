@@ -84,21 +84,42 @@ const updateUser = (request, response) => {
   );
 };
 
-const deleteUser = (request, response) => {
+const getEvents = (request, response) => {
   const id = parseInt(request.params.id);
 
-  pool.query("DELETE FROM users WHERE id = $1", [id], (error, results) => {
-    if (error) {
-      throw error;
+  pool.query(
+    `select events.event_name,events.url, venue.name,venue.postal_code, venue_address.address_line_1
+  from events 
+  inner join venue on events.venue_id = venue.id
+  inner join venue_address  on venue.id=venue_address.address_id`,
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      console.log(results.rows);
+      response.status(200).json({ data: results.rows });
     }
-    response.status(200).send(`User deleted with ID: ${id}`);
-  });
+  );
 };
+
+// const getEvents = () => {
+//   //     select events.event_name,events.url, venue.name,venue.postal_code, venue_address.address_line_1
+//   // from events
+//   // inner join venue on events.venue_id = venue.id
+//   // inner join venue_address  on venue.id=venue_address.address_id
+
+//   pool.query("", [id], (error, results) => {
+//     if (error) {
+//       throw error;
+//     }
+//     response.status(200).send(`User deleted with ID: ${id}`);
+//   });
+// };
 
 module.exports = {
   getUsers,
   getUserByUsername,
   createUser,
   updateUser,
-  deleteUser,
+  getEvents,
 };

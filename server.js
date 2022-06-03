@@ -13,7 +13,7 @@ app.use(
   })
 );
 
-const { createUser, getUserByUsername } = queryService;
+const { createUser, getUserByUsername, getEvents } = queryService;
 
 app.get("/", (req, res) => {
   res.json({ responsetype: "service is up!!" });
@@ -26,6 +26,10 @@ app.post("/createUser", (req, res) => {
 
 app.get("/getUser", (req, res) => {
   getUserByUsername(req, res);
+});
+
+app.get("/getEvents", (req, res) => {
+  getEvents(req, res);
 });
 
 app.listen(port, () => {
