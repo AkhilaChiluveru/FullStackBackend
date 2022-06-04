@@ -13,7 +13,15 @@ app.use(
   })
 );
 
-const { createUser, getUserByUsername, getEvents } = queryService;
+const {
+  createUser,
+  getUserByUsername,
+  getEvents,
+  saveWhishlist,
+  savePurchase,
+  getPurchase,
+  getWhishlist,
+} = queryService;
 
 app.get("/", (req, res) => {
   res.json({ responsetype: "service is up!!" });
@@ -30,6 +38,20 @@ app.get("/getUser", (req, res) => {
 
 app.get("/getEvents", (req, res) => {
   getEvents(req, res);
+});
+
+app.post("/saveWhishlist", (req, res) => {
+  saveWhishlist(req, res);
+});
+app.post("/savePurchase", (req, res) => {
+  savePurchase(req, res);
+});
+app.get("/getPurchase", (req, res) => {
+  getPurchase(req, res);
+});
+
+app.get("/getWhishlist", (req, res) => {
+  getWhishlist(req, res);
 });
 
 app.listen(port, () => {

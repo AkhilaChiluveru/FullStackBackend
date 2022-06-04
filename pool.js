@@ -25,7 +25,7 @@ const getUserByUsername = (request, response) => {
   const { username, password } = request.query;
   console.log(request.query);
   pool.query(
-    "SELECT count(username) FROM users WHERE username = $1 and password=$2",
+    "SELECT user_id, username FROM users WHERE username = $1 and password=$2",
     [username, password],
     (error, results) => {
       if (error) {
@@ -33,15 +33,24 @@ const getUserByUsername = (request, response) => {
       }
 
       console.log(results.rows);
-      const { count } = results.rows[0];
-      if (parseInt(count, 10) === 0) {
+      let savedUsername;
+      let savedUserID;
+      if (results.rows.length) {
+        // const { username } = results.rows[0];
+        savedUsername = results.rows[0].username;
+        savedUserID = results.rows[0].user_id;
+      }
+      if (results.rows.length === 0) {
         response
           .status(200)
           .json({ response: "user does not exist", error: { isError: true } });
       }
-      if (parseInt(count, 10) >= 1) {
+      if (savedUsername === username) {
         response.status(200).json({
           response: "successfully authenticated",
+          data: {
+            userId: savedUserID,
+          },
           error: { isError: false },
         });
       }
@@ -86,9 +95,10 @@ const updateUser = (request, response) => {
 
 const getEvents = (request, response) => {
   const id = parseInt(request.params.id);
+  const { name, email } = request.body;
 
   pool.query(
-    `select events.event_name,events.url, venue.name,venue.postal_code, venue_address.address_line_1
+    `select events.event_id,events.event_name,events.url, venue.name,venue.postal_code, venue_address.address_line_1
   from events 
   inner join venue on events.venue_id = venue.id
   inner join venue_address  on venue.id=venue_address.address_id`,
@@ -96,7 +106,74 @@ const getEvents = (request, response) => {
       if (error) {
         throw error;
       }
-      console.log(results.rows);
+      response.status(200).json({ data: results.rows });
+    }
+  );
+};
+
+const saveWhishlist = (request, response) => {
+  const { user_id, event_id } = request.body;
+  console.log(user_id, event_id);
+  pool.query(
+    `INSERT INTO whishlist (user_id,event_id) VALUES ($1, $2)`,
+    [user_id, event_id],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json({ data: results.rows });
+    }
+  );
+};
+
+const savePurchase = (request, response) => {
+  const { user_id, event_id } = request.body;
+  console.log(user_id, event_id);
+  pool.query(
+    `INSERT INTO purchased (user_id,event_id) VALUES ($1, $2)`,
+    [user_id, event_id],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json({ data: results.rows });
+    }
+  );
+};
+
+const getPurchase = (request, response) => {
+  const { user_id } = request.query;
+  console.log("data", user_id);
+  pool.query(
+    `select events.event_id , events.event_name, events.url, venue_address.address_line_1, venue.postal_code
+    from events INNER JOIN purchased on events.event_id=purchased.event_id 
+    INNER JOIN venue on events.venue_id = venue.id
+    INNER JOIN venue_address on venue.id=venue_address.address_id
+    where purchased.user_id=$1`,
+    [user_id],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json({ data: results.rows });
+    }
+  );
+};
+
+const getWhishlist = (request, response) => {
+  const { user_id } = request.query;
+  console.log("data", user_id);
+  pool.query(
+    `select events.event_id , events.event_name, events.url, venue_address.address_line_1,venue.postal_code
+    from events INNER JOIN whishlist on events.event_id=whishlist.event_id 
+    INNER JOIN venue on events.venue_id = venue.id
+    INNER JOIN venue_address on venue.id=venue_address.address_id
+    where whishlist.user_id=$1`,
+    [user_id],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
       response.status(200).json({ data: results.rows });
     }
   );
@@ -122,4 +199,8 @@ module.exports = {
   createUser,
   updateUser,
   getEvents,
+  saveWhishlist,
+  savePurchase,
+  getPurchase,
+  getWhishlist,
 };
