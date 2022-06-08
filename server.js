@@ -21,6 +21,7 @@ const {
   savePurchase,
   getPurchase,
   getWhishlist,
+  removeWhishlist,
 } = queryService;
 
 app.get("/", (req, res) => {
@@ -54,6 +55,10 @@ app.get("/getWhishlist", (req, res) => {
   getWhishlist(req, res);
 });
 
+app.delete("/removeWhishlist", (req, res) => {
+  removeWhishlist(req, res);
+});
+
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Example app listening on current port ${port}`);
 });
