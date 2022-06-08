@@ -1,15 +1,16 @@
 const Pool = require("pg").Pool;
 const moment = require("moment");
-const connectionString = "postgres://postgres:postgrespw@localhost:55000";
-
+const connectionString =
+  "postgresql://postgres:postgrespw@host.docker.internal:5433/events";
+// const connectionString = "postgres://postgres/postgres";
 const pool = new Pool({ connectionString });
 
 // const pool = new Pool({
-//   user: "me",
-//   host: "postgres://postgres:postgrespw@localhost:55000",
-//   database: "Events",
+//   user: "postgres",
+//   host: "localhost",
+//   database: "public",
 //   password: "postgrespw",
-//   port: 55000,
+//   port: 5433,
 // });
 
 const getUsers = (request, response) => {
@@ -164,12 +165,27 @@ const getWhishlist = (request, response) => {
   const { user_id } = request.query;
   console.log("data", user_id);
   pool.query(
-    `select events.event_id , events.event_name, events.url, venue_address.address_line_1,venue.postal_code
+    `select whishlist.whishlist_id,events.event_id , events.event_name, events.url, venue_address.address_line_1,venue.postal_code
     from events INNER JOIN whishlist on events.event_id=whishlist.event_id 
     INNER JOIN venue on events.venue_id = venue.id
     INNER JOIN venue_address on venue.id=venue_address.address_id
     where whishlist.user_id=$1`,
     [user_id],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json({ data: results.rows });
+    }
+  );
+};
+
+const removeWhishlist = (request, response) => {
+  const { id } = request.body;
+  console.log("data", id);
+  pool.query(
+    `delete from whishlist where whishlist_id=$1`,
+    [id],
     (error, results) => {
       if (error) {
         throw error;
@@ -203,4 +219,5 @@ module.exports = {
   savePurchase,
   getPurchase,
   getWhishlist,
+  removeWhishlist,
 };
